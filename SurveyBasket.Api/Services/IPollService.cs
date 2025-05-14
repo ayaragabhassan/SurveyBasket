@@ -1,10 +1,12 @@
-﻿namespace SurveyBasket.Api.Services;
+﻿using SurveyBasket.Api.Contracts.Request;
+
+namespace SurveyBasket.Api.Services;
 
 public interface IPollService
 {
-    IEnumerable<Poll> GetAll();
-    Poll? Get(int id);
-    Poll Create(Poll poll);
-    bool Update(int id, Poll poll);
-    bool Delete(int id);
+    Task<IEnumerable<Poll>> GetAllAsync();
+    Task<Poll?> GetAsync(int id);
+    Task<Poll> CreateAsync(CreatePollRequest request);
+    //bool Update(int id, Poll poll);
+    //bool Delete(int id);
 }

@@ -1,4 +1,7 @@
-﻿namespace SurveyBasket.Api.Controllers;
+﻿using SurveyBasket.Api.Contracts.Request;
+using SurveyBasket.Api.Contracts.Responses;
+
+namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -7,44 +10,51 @@ public class PollsController(IPollService pollService) : ControllerBase
     private readonly IPollService _pollService = pollService;
 
     [HttpGet(template:"")] // OR     [Route(template:"")]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        return Ok(_pollService.GetAll());
+        var polls = await _pollService.GetAllAsync();
+        var response = polls.Adapt<IEnumerable<PollResponse>>();
+        return Ok(response);
     }
 
-    [HttpGet(template:"{id}")]
+    [HttpGet(template: "{id}")]
 
-    public IActionResult GetByID(int id)
+    public async Task<IActionResult> GetByID(int id)
     {
-        var poll = _pollService.Get(id);
+        var poll = await _pollService.GetAsync(id);
 
-        return poll is null? NotFound(): Ok(poll);
+        if (poll is null)
+            return NotFound();
+
+        var response = poll.Adapt<PollResponse>();
+
+        return Ok(response);
     }
 
-    [HttpPost(template:"")]
+    [HttpPost(template: "")]
 
-    public IActionResult Create(Poll poll)
+    public async Task<IActionResult> Create([FromBody]CreatePollRequest request)
     {
-        var newPoll = _pollService.Create(poll);
-        return newPoll is null ? NotFound() : CreatedAtAction(nameof(GetByID),new {id = newPoll.Id},newPoll );
+        var newPoll = await _pollService.CreateAsync(request);
+        return newPoll is null ? NotFound() : CreatedAtAction(nameof(GetByID), new { id = newPoll.Id }, newPoll);
     }
 
-    [HttpPut(template: "{id}")]
+    //[HttpPut(template: "{id}")]
 
-    public IActionResult Update(int id, Poll poll)
-    {
-        var isUpdated = _pollService.Update(id,poll);
-        return isUpdated ? NoContent() : NotFound();
-        
-    }
+    //public IActionResult Update(int id, Poll poll)
+    //{
+    //    var isUpdated = _pollService.Update(id,poll);
+    //    return isUpdated ? NoContent() : NotFound();
+
+    //}
 
 
-    [HttpDelete(template: "{id}")]
+    //[HttpDelete(template: "{id}")]
 
-    public IActionResult Delete(int id)
-    {
-        var isDeleted = _pollService.Delete(id);
-        return isDeleted ? NoContent() : NotFound();
+    //public IActionResult Delete(int id)
+    //{
+    //    var isDeleted = _pollService.Delete(id);
+    //    return isDeleted ? NoContent() : NotFound();
 
-    }
+    //}
 }

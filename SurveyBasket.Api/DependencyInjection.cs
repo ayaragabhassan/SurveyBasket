@@ -1,13 +1,20 @@
-﻿using System.Reflection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using SurveyBasket.Api.Persistance;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SurveyBasket;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddDependencies(this IServiceCollection services)
+    public static IServiceCollection AddDependencies(this IServiceCollection services,
+        IConfiguration configuration)
     {
         // Add services to the container.
         services.AddControllers();
+
+        services.AddDBContextService(configuration);
 
         services
             .AddSwagerServices()
@@ -48,6 +55,14 @@ public static class DependencyInjection
         services.AddFluentValidationAutoValidation()
             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+        return services;
+    }
+    public static IServiceCollection AddDBContextService(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connecrionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("connesction string not found !");
+
+        services.AddDbContext<ApplicationDBContext>(options =>
+        options.UseSqlServer(connecrionString));
         return services;
     }
 

@@ -1,7 +1,7 @@
 ﻿namespace SurveyBasket.Api.Contracts.Responses;
 
 public record PollResponse (int Id,
-    string Tiltle,
+    string Title,
     string Summery,
     bool IsPublished,
     DateOnly StartedAt,

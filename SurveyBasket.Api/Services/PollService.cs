@@ -1,4 +1,5 @@
 ﻿
+using Azure.Core;
 using SurveyBasket.Api.Contracts.Request;
 using SurveyBasket.Api.Persistance;
 
@@ -8,39 +9,61 @@ public class PollService(ApplicationDBContext context) : IPollService
 {
     private readonly ApplicationDBContext _context = context;
    
-    public async Task<IEnumerable<Poll>> GetAllAsync()
-        => await _context.Polls.AsNoTracking( ).ToListAsync();
+    public async Task<IEnumerable<Poll>> GetAllAsync(CancellationToken cancellationToken)
+        => await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
   
-    public async Task<Poll?> GetAsync(int id) => await _context.Polls.FindAsync(id);
+    public async Task<Poll?> GetAsync([FromRoute] int id,CancellationToken cancellationToken)
+        => await _context.Polls.FindAsync(id, cancellationToken);
 
-    public async Task<Poll> CreateAsync(CreatePollRequest request)
+    public async Task<Poll> CreateAsync([FromBody]PollRequest request, CancellationToken cancellationToken)
     {
         var poll = request.Adapt<Poll>();
-        await _context.Polls.AddAsync(poll);
-        await _context.SaveChangesAsync();
+        await _context.Polls.AddAsync(poll, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
         return poll;
     }
 
-    //public bool Update(int id, Poll poll)
-    //{
-    //    var currentPoll = Get(id);
-    //    if (currentPoll != null)
-    //    {
-    //        currentPoll.Title = poll.Title;
-    //        currentPoll.Summery = poll.Summery;    
-    //        return true;
-    //    }
-    //    return false;
-    //}
+    public async Task<bool> UpdateAsync([FromRoute]int id,[FromBody] PollRequest request,CancellationToken cancellationToken)
+    {
+        var currentPoll = await GetAsync(id, cancellationToken);
+        if (currentPoll != null)
+        {
+            currentPoll.Title = request.Title;
+            currentPoll.Summery = request.Summery;
+            currentPoll.IsPublished = request.IsPublished;
+            currentPoll.StartedAt = request.StartedAt;
+            currentPoll.EndAt = request.EndAt;
 
-    //public bool Delete(int id)
-    //{
-    //    var poll = Get(id);
-    //    if (poll != null)
-    //    {
-    //        _polls.Remove(poll);
-    //        return true;
-    //    }
-    //    return false;
-    //}
+            _context.Polls.Update(currentPoll);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> DeleteAsync([FromRoute]int id, CancellationToken cancellationToken = default)
+    {
+        var poll = await GetAsync(id,cancellationToken);
+        if (poll != null)
+        {
+            _context.Polls.Remove(poll);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var poll = await GetAsync(id, cancellationToken);
+        if (poll != null)
+        {
+            poll.IsPublished = !poll.IsPublished;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
+        return false;
+    }
 }

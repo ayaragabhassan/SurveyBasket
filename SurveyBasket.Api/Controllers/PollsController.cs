@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
-using SurveyBasket.Api.Contracts.Request;
-using SurveyBasket.Api.Contracts.Responses;
+using Microsoft.AspNetCore.Authorization;
+using SurveyBasket.Api.Contracts.Polls.Request;
+using SurveyBasket.Api.Contracts.Polls.Responses;
 
 namespace SurveyBasket.Api.Controllers;
 
@@ -11,6 +12,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     private readonly IPollService _pollService = pollService;
 
     [HttpGet(template:"")] // OR     [Route(template:"")]
+    [Authorize]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var polls = await _pollService.GetAllAsync(cancellationToken);

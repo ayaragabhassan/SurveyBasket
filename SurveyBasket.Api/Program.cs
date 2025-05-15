@@ -2,6 +2,8 @@ using SurveyBasket;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+//    .AddEntityFrameworkStores<ApplicationDBContext>();
 
 builder.Services.AddDependencies(builder.Configuration);
 var app = builder.Build();
@@ -18,6 +20,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+//Built in Endpoints for Identity Functions
+//app.MapIdentityApi<ApplicationUser>();
 
 app.MapControllers();
 

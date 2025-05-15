@@ -1,9 +1,12 @@
 ﻿
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Reflection;
 
 namespace SurveyBasket.Api.Persistance;
 
-public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : DbContext(options) // send options to Base class "DBContext"
+public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : 
+    IdentityDbContext<ApplicationUser>(options) // send options to Base class "DBContext"
+
 {
     public DbSet<Poll> Polls {  get; set; }
 

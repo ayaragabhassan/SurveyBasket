@@ -1,6 +1,6 @@
 ﻿
 using Azure.Core;
-using SurveyBasket.Api.Contracts.Request;
+using SurveyBasket.Api.Contracts.Polls.Request;
 using SurveyBasket.Api.Persistance;
 
 namespace SurveyBasket.Api.Services;

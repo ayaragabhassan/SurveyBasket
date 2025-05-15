@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Persistance;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace SurveyBasket;
 
@@ -14,6 +16,8 @@ public static class DependencyInjection
         // Add services to the container.
         services.AddControllers();
 
+        services.AddAuthorizationService();
+
         services.AddDBContextService(configuration);
 
         services
@@ -21,6 +25,7 @@ public static class DependencyInjection
             .AddMapsterServices()
             .AddFluentValidationServices();
 
+        services.AddScoped<IAuthService, AuthService>();
 
         services.AddScoped<IPollService, PollService>();
 
@@ -28,7 +33,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddSwagerServices(this IServiceCollection services)
+    private static IServiceCollection AddSwagerServices(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
@@ -36,7 +41,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddMapsterServices(this IServiceCollection services)
+    private static IServiceCollection AddMapsterServices(this IServiceCollection services)
     {
         //AddMapster
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
@@ -49,7 +54,7 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddFluentValidationServices(this IServiceCollection services)
+    private static IServiceCollection AddFluentValidationServices(this IServiceCollection services)
     {
         //Instide of writing the same line for each validation  builder.Services.AddScoped<IValidator<Poll>,CreatePollRequestValidator>();
         services.AddFluentValidationAutoValidation()
@@ -57,12 +62,40 @@ public static class DependencyInjection
 
         return services;
     }
-    public static IServiceCollection AddDBContextService(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddDBContextService(this IServiceCollection services, IConfiguration configuration)
     {
         var connecrionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("connesction string not found !");
 
         services.AddDbContext<ApplicationDBContext>(options =>
         options.UseSqlServer(connecrionString));
+        return services;
+    }
+    private static IServiceCollection AddAuthorizationService(this IServiceCollection services)
+    {
+        services.AddSingleton<IJwtProvider, JwtProvider>();
+
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDBContext>();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(o =>
+        {
+            o.SaveToken = true;
+            o.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("J7MfAb4WcAIMkkigVtIepIILOVJEjAcB")),
+                ValidIssuer = "SurveyBasketApp",
+                ValidAudience = "SurveyBasketUsers"
+            };
+        });
         return services;
     }
 

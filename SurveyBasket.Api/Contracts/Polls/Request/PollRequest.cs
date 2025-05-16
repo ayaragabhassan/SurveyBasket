@@ -3,8 +3,6 @@
 public record PollRequest
     (string Title,
      string Summery,
-    bool IsPublished,
-    DateOnly StartedAt,
-    DateOnly EndAt)
-{
-}
+     DateOnly StartedAt,
+     DateOnly EndAt);
+

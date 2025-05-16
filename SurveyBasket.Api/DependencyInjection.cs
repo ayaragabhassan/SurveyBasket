@@ -16,7 +16,7 @@ public static class DependencyInjection
         // Add services to the container.
         services.AddControllers();
 
-        services.AddAuthorizationService();
+        services.AddAuthorizationService(configuration);
 
         services.AddDBContextService(configuration);
 
@@ -70,13 +70,20 @@ public static class DependencyInjection
         options.UseSqlServer(connecrionString));
         return services;
     }
-    private static IServiceCollection AddAuthorizationService(this IServiceCollection services)
+    private static IServiceCollection AddAuthorizationService(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+          .AddEntityFrameworkStores<ApplicationDBContext>();
+
+        var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
-        services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDBContext>();
 
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+
+      
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -91,9 +98,9 @@ public static class DependencyInjection
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("J7MfAb4WcAIMkkigVtIepIILOVJEjAcB")),
-                ValidIssuer = "SurveyBasketApp",
-                ValidAudience = "SurveyBasketUsers"
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+                ValidIssuer = jwtSettings?.Issuer,
+                ValidAudience = jwtSettings?.Audience
             };
         });
         return services;

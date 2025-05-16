@@ -30,7 +30,6 @@ public class PollService(ApplicationDBContext context) : IPollService
         {
             currentPoll.Title = request.Title;
             currentPoll.Summery = request.Summery;
-            currentPoll.IsPublished = request.IsPublished;
             currentPoll.StartedAt = request.StartedAt;
             currentPoll.EndAt = request.EndAt;
 

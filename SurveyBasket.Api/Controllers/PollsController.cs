@@ -1,7 +1,6 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
-using SurveyBasket.Api.Contracts.Polls.Request;
-using SurveyBasket.Api.Contracts.Polls.Responses;
+using SurveyBasket.Api.Contracts.Polls;
 
 namespace SurveyBasket.Api.Controllers;
 

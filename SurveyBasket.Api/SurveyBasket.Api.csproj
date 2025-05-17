@@ -25,8 +25,4 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Persistance\Migrations\" />
-  </ItemGroup>
-
 </Project>

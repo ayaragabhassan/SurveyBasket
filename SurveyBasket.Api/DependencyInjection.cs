@@ -16,24 +16,26 @@ public static class DependencyInjection
         // Add services to the container.
         services.AddControllers();
 
-        services.AddAuthorizationService(configuration);
+        services.AddCorsConfg(configuration);
 
-        services.AddDBContextService(configuration);
+        services.AddAuthorizationConfig(configuration);
+
+        services.AddDBContextConfig(configuration);
 
         services
-            .AddSwagerServices()
-            .AddMapsterServices()
-            .AddFluentValidationServices();
+            .AddSwagerConfig()
+            .AddMapsterConfig()
+            .AddFluentValidationConfig();
 
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddScoped<IPollService, PollService>();
 
-       
+
         return services;
     }
 
-    private static IServiceCollection AddSwagerServices(this IServiceCollection services)
+    private static IServiceCollection AddSwagerConfig(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
@@ -41,7 +43,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddMapsterServices(this IServiceCollection services)
+    private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
     {
         //AddMapster
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
@@ -54,7 +56,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddFluentValidationServices(this IServiceCollection services)
+    private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
     {
         //Instide of writing the same line for each validation  builder.Services.AddScoped<IValidator<Poll>,CreatePollRequestValidator>();
         services.AddFluentValidationAutoValidation()
@@ -62,7 +64,7 @@ public static class DependencyInjection
 
         return services;
     }
-    private static IServiceCollection AddDBContextService(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddDBContextConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var connecrionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("connesction string not found !");
 
@@ -70,7 +72,7 @@ public static class DependencyInjection
         options.UseSqlServer(connecrionString));
         return services;
     }
-    private static IServiceCollection AddAuthorizationService(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddAuthorizationConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddIdentity<ApplicationUser, IdentityRole>()
           .AddEntityFrameworkStores<ApplicationDBContext>();
@@ -83,7 +85,7 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
 
-      
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -102,6 +104,26 @@ public static class DependencyInjection
                 ValidIssuer = jwtSettings?.Issuer,
                 ValidAudience = jwtSettings?.Audience
             };
+        });
+        return services;
+    }
+    private static IServiceCollection AddCorsConfg(this IServiceCollection services, IConfiguration configuration)
+    {
+        var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>()!;
+
+        //services.AddCors(Options =>
+        //{
+        //    Options.AddPolicy("AllowedPolicy",
+        //        builder => builder.AllowAnyHeader()
+        //                .AllowAnyMethod()
+        //                .WithOrigins(allowedOrigins));
+        //});
+        services.AddCors(Options =>
+        {
+            Options.AddDefaultPolicy(builder =>
+                 builder.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins(allowedOrigins));
         });
         return services;
     }

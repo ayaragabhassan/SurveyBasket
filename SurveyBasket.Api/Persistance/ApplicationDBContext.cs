@@ -11,13 +11,22 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
 
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-    
+
     public DbSet<Poll> Polls { get; set; }
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<Answer> Answers { get; set; }
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         //For each configration Class this line will be executed
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        var cascadeFKs = modelBuilder.Model.GetEntityTypes()
+            .SelectMany(t => t.GetForeignKeys()
+            .Where(fk => fk.DeleteBehavior == DeleteBehavior.Cascade && !fk.IsOwnership));
+        foreach ( var fk in cascadeFKs )
+            fk.DeleteBehavior = DeleteBehavior.Restrict;
         base.OnModelCreating(modelBuilder);
     }
 
@@ -40,6 +49,6 @@ public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options
 
             }
         }
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken); 
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 }

@@ -25,7 +25,7 @@ public class PollsController(IPollService pollService) : ControllerBase
         var pollResult = await _pollService.GetAsync(id,cancellationToken);
 
         return pollResult.IsSuccess ? Ok(pollResult.Value)
-            : Problem(statusCode:StatusCodes.Status404NotFound,title: pollResult.Error.Code,detail:pollResult.Error.Name) ; //NotFound(pollResult.Error);
+            : pollResult.ToProblem() ; //NotFound(pollResult.Error);
     }
 
     [HttpPost(template: "")]
@@ -35,7 +35,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.CreateAsync(request,cancellationToken);
         return result.IsFailure 
-            ? Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Name)
+            ? result.ToProblem()
             : CreatedAtAction(nameof(GetByID), new { id = result.Value.Id }, result.Value);
     }
 
@@ -45,7 +45,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.UpdateAsync(id, request,cancellationToken);
         return result.IsSuccess ? NoContent() 
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Name);
+            : result.ToProblem();
 
     }
 
@@ -56,7 +56,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.DeleteAsync(id,cancellationToken);
         return result.IsSuccess ? NoContent() 
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Name);
+            : result.ToProblem();
 
     }
 
@@ -66,6 +66,6 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.TogglePublishStatusAsync(id, cancellationToken);
         return result.IsSuccess ? NoContent() 
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Name);
+            : result.ToProblem();
     }
 }

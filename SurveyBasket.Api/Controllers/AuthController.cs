@@ -1,6 +1,4 @@
-﻿
-
-namespace SurveyBasket.Api.Controllers;
+﻿namespace SurveyBasket.Api.Controllers;
 [Route("[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
@@ -14,7 +12,13 @@ public class AuthController(IAuthService authService) : ControllerBase
         var authResult = await _authService.GetTokenAsync(loginRequest.Email, loginRequest.Password, cancellationToken);
         return authResult.Match(
             authResponse => Ok(authResponse),
-            error => Problem(statusCode: StatusCodes.Status400BadRequest, title: error.Code, detail: error.Name)
+            error => Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Bad Request",
+                extensions: new Dictionary<string,object?>
+                {
+                    { "errors",new object[] { error } }
+                })
             );
     
     }
@@ -24,7 +28,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var authResult = await _authService.GetRefreshTokenAsync(tokenRequest.Token, tokenRequest.RefreshToken, cancellationToken);
         return authResult.IsFailure
-            ? Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Name) 
+            ? authResult.ToProblem() 
             : Ok(authResult.Value);
     }
 
@@ -34,6 +38,6 @@ public class AuthController(IAuthService authService) : ControllerBase
         var result = await _authService.RevokeRefreshTokenAsync(tokenRequest.Token, tokenRequest.RefreshToken, cancellationToken);
         
         return result.IsSuccess ? Ok()
-            : Problem(statusCode:StatusCodes.Status400BadRequest, title: result.Error.Code, detail: result.Error.Name);
+            : result.ToProblem();
     }
 }

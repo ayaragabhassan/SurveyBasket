@@ -15,6 +15,10 @@ public class PollService(ApplicationDBContext context) : IPollService
   
     public async Task<Result<PollResponse>> CreateAsync([FromBody]PollRequest request, CancellationToken cancellationToken)
     {
+        var isExisted = await _context.Polls.AnyAsync(p=>p.Title == request.Title, cancellationToken);
+        if (isExisted) {
+           return Result.Failure<PollResponse>(PollErrors.DuplicatedPollTitle);
+        }
         var poll = request.Adapt<Poll>();
         await _context.Polls.AddAsync(poll, cancellationToken);
     
@@ -26,6 +30,11 @@ public class PollService(ApplicationDBContext context) : IPollService
 
     public async Task<Result> UpdateAsync([FromRoute]int id,[FromBody] PollRequest request,CancellationToken cancellationToken)
     {
+        var isExisted = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id, cancellationToken);
+        if (isExisted)
+        {
+            return Result.Failure<PollResponse>(PollErrors.DuplicatedPollTitle);
+        }
         var currentPoll = await _context.Polls.FindAsync(id, cancellationToken); ;
         if (currentPoll != null)
         {

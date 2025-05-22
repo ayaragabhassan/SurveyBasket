@@ -9,10 +9,18 @@ public class PollService(ApplicationDBContext context) : IPollService
    
     public async Task<IEnumerable<PollResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var polls = await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
-        return polls.Adapt<IEnumerable<PollResponse>>();
+        return await _context.Polls.AsNoTracking().ProjectToType<PollResponse>().ToListAsync(cancellationToken); 
     }
-  
+    public async Task<IEnumerable<PollResponse>> GetCurrentAsync(CancellationToken cancellationToken)
+    {
+        var polls = await _context.Polls.AsNoTracking()
+            .Where(p=>p.IsPublished && p.StartedAt <= DateOnly.FromDateTime(DateTime.UtcNow) && p.EndAt >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .ProjectToType<PollResponse>()
+            .ToListAsync(cancellationToken);
+        
+        return polls;
+    }
+
     public async Task<Result<PollResponse>> CreateAsync([FromBody]PollRequest request, CancellationToken cancellationToken)
     {
         var isExisted = await _context.Polls.AnyAsync(p=>p.Title == request.Title, cancellationToken);

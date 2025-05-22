@@ -15,4 +15,6 @@ public sealed class Poll : AuditableEntity //becuse we didn't inherit from it
     public DateOnly EndAt { get; set; }
 
     public ICollection<Question> Questions { get; set; } = [];
+    public ICollection<Vote> Votes { get; set; } = [];
+
 }

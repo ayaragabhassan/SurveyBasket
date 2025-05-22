@@ -19,14 +19,14 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
         {
-            return UserErrors.InvalidCredintials;
+            return UserErrors.InvalidCredentials;
         }
         //Check Password
         var isValidPassword = await _userManager.CheckPasswordAsync(user, password);
 
         if (!isValidPassword)
         {
-            return UserErrors.InvalidCredintials;
+            return UserErrors.InvalidCredentials;
         }
 
         //Generate JWT Token 
@@ -52,15 +52,15 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     {
         var userId = _jwtProvider.ValidateToken(token);
 
-        if (userId == null) { return Result.Failure<AuthResponse>(UserErrors.InvalidCredintials); }
+        if (userId == null) { return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken); }
 
         var user = await _userManager.FindByIdAsync(userId);
 
-        if (user == null) { return Result.Failure<AuthResponse>(UserErrors.InvalidCredintials); }
+        if (user == null) { return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials); }
 
         var userRefreshToken =  user.RefreshTokens.SingleOrDefault(r => r.Token == refreshToken && r.IsActive);
 
-        if (userRefreshToken == null) { return Result.Failure<AuthResponse>(UserErrors.InvalidCredintials); }
+        if (userRefreshToken == null) { return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken); }
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
 
@@ -86,17 +86,17 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         var userId = _jwtProvider.ValidateToken(token);
 
         if (userId == null) 
-            return Result.Failure(UserErrors.InvalidCredintials); 
+            return Result.Failure(UserErrors.InvalidJwtToken); 
 
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null)
-            return Result.Failure(UserErrors.InvalidCredintials);
+            return Result.Failure(UserErrors.InvalidCredentials);
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(r => r.Token == refreshToken && r.IsActive);
 
         if (userRefreshToken == null) 
-             return Result.Failure(UserErrors.InvalidCredintials); 
+             return Result.Failure(UserErrors.InvalidRefreshToken); 
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 

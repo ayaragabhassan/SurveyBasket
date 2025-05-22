@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Persistance;
+using SurveyBasket.Services;
 using System.Reflection;
 using System.Text;
 
@@ -34,6 +35,8 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
 
         services.AddScoped<IVoteService, VoteService>();
+
+        services.AddScoped<IResultService, ResultService>();
 
 
         services.AddExceptionHandler<GlobalExceptionHandler>();

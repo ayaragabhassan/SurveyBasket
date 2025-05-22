@@ -11,6 +11,7 @@ global using Microsoft.Extensions.Options;
 global using SurveyBasket.Api.Abstractions;
 global using SurveyBasket.Api.Errors;
 global using SurveyBasket.Api.Extentions;
+global using SurveyBasket.Api.Contracts.Results;
 
 
 global using SurveyBasket.Api.Entities;

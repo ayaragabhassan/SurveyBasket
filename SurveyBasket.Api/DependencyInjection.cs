@@ -16,7 +16,7 @@ public static class DependencyInjection
     {
         // Add services to the container.
         services.AddControllers();
-
+        services.AddHybridCache();
         services.AddCorsConfg(configuration);
 
         services.AddAuthorizationConfig(configuration);

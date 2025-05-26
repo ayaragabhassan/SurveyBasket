@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 using SurveyBasket.Api.Contracts.Votes;
 
 namespace SurveyBasket.Api.Controllers;
 [Route("api/poll/{pollId}/[controller]")]
 [ApiController]
-[Authorize]
+//[Authorize]
 public class VoteController(IVoteService voteService) : ControllerBase
 {
     private readonly IVoteService _voteService = voteService;
 
     //Get All Avilable Questions For Start Voting 
     [HttpGet(template: "")]
+   // [OutputCache(PolicyName = "Polls")]
     public async Task<IActionResult> StartVote([FromRoute] int pollId, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId(); 

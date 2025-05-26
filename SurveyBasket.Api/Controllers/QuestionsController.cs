@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 using SurveyBasket.Api.Contracts.Question;
 
 namespace SurveyBasket.Api.Controllers;

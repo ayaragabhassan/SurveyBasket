@@ -1,9 +1,30 @@
+using Serilog;
 using SurveyBasket;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
 //    .AddEntityFrameworkStores<ApplicationDBContext>();
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    //configuration
+    //.MinimumLevel.Information()
+    //.WriteTo.Console();
+    configuration.ReadFrom.Configuration(context.Configuration);
+}
+);
+//Add Caching 
+//builder.Services.AddResponseCaching();
+//builder.Services.AddOutputCache(options =>
+//{
+//    options.AddPolicy("Polls", x => 
+//           x.Cache()
+//           .Expire(TimeSpan.FromSeconds(60))
+//           .Tag("AvailableQuestions"));
+//});
+
+//builder.Services.AddMemoryCache();
 
 builder.Services.AddDependencies(builder.Configuration);
 var app = builder.Build();
@@ -17,8 +38,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 
+//app.UseOutputCache();
 app.UseCors();
 
 app.UseAuthorization();

@@ -1,12 +1,15 @@
-﻿using SurveyBasket.Api.Contracts.Polls;
+﻿using Hangfire;
+using SurveyBasket.Api.Contracts.Polls;
 using SurveyBasket.Api.Persistance;
 
 namespace SurveyBasket.Api.Services;
 
-public class PollService(ApplicationDBContext context) : IPollService
+public class PollService(ApplicationDBContext context,
+    INotificationService notificationService) : IPollService
 {
     private readonly ApplicationDBContext _context = context;
-   
+    private readonly INotificationService _notificationService = notificationService;
+
     public async Task<IEnumerable<PollResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await _context.Polls.AsNoTracking().ProjectToType<PollResponse>().ToListAsync(cancellationToken); 
@@ -74,14 +77,18 @@ public class PollService(ApplicationDBContext context) : IPollService
     public async Task<Result> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
     {
         var poll = await _context.Polls.FindAsync(id, cancellationToken);
-        if (poll != null)
-        {
-            poll.IsPublished = !poll.IsPublished;
-            await _context.SaveChangesAsync(cancellationToken);
 
-            return Result.Sucess();
-        }
-        return Result.Failure(PollErrors.PollNotFound);
+        if (poll is null)
+            return Result.Failure(PollErrors.PollNotFound);
+
+        poll.IsPublished = !poll.IsPublished;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        if (poll.IsPublished && poll.StartedAt == DateOnly.FromDateTime(DateTime.UtcNow))
+            BackgroundJob.Enqueue(() => _notificationService.SendNewPollsNotification(poll.Id));
+
+        return Result.Sucess();
     }
 
     public async Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken)

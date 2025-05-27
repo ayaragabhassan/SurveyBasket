@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
@@ -34,6 +35,9 @@ public static class DependencyInjection
 
         services.AddScoped<IPollService, PollService>();
 
+        services.AddScoped<INotificationService, NotificationService>();
+
+
         services.AddScoped<IQuestionService, QuestionService>();
 
         services.AddScoped<IVoteService, VoteService>();
@@ -48,6 +52,8 @@ public static class DependencyInjection
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
+
+        services.AddHangFireConfg(configuration);
         return services;
     }
 
@@ -152,6 +158,20 @@ public static class DependencyInjection
                         .AllowAnyMethod()
                         .WithOrigins(allowedOrigins));
         });
+        return services;
+    }
+
+    private static IServiceCollection AddHangFireConfg(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Add Hangfire services.
+        services.AddHangfire(confi => confi
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+
+        // Add the processing server as IHostedService
+        services.AddHangfireServer();
         return services;
     }
 

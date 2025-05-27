@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using SurveyBasket.Api.Contracts.Authentication;
 
 namespace SurveyBasket.Api.Controllers;
 [Route("[controller]")]
@@ -9,7 +10,7 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
     private readonly ILogger<AuthController> _logger = logger;
 
     [HttpPost(template: "")]
-    public async Task<IActionResult> Login(LoginRequest loginRequest, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login(Contracts.Authorization.LoginRequest loginRequest, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Logging with email: {email} and password: {password}", loginRequest.Email, loginRequest.Password);
 
@@ -43,5 +44,28 @@ public class AuthController(IAuthService authService, ILogger<AuthController> lo
         
         return result.IsSuccess ? Ok()
             : result.ToProblem();
+    }
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] Contracts.Authorization.RegisterRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.RegisterAsync(request, cancellationToken);
+
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.ConfirmEmailAsync(request);
+
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPost("resend-confirmation-email")]
+    public async Task<IActionResult> ResendConfirmationEmail([FromBody] Contracts.Authentication.ResendConfirmationEmailRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.ResendConfirmationEmailAsync(request);
+
+        return result.IsSuccess ? Ok() : result.ToProblem();
     }
 }

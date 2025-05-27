@@ -9,6 +9,9 @@ public class MappingConfigration : IRegister
         // throw new NotImplementedException();
         config.NewConfig<QuestionRequest, Question>()
              .Map(dest => dest.Answers, src => src.Answers.Select(answer => new Answer { Content = answer }));
-            //.Ignore(nameof(Question.Answers));
+        //.Ignore(nameof(Question.Answers));
+
+        config.NewConfig<RegisterRequest, ApplicationUser>()
+           .Map(dest => dest.UserName, src => src.Email);
     }
 }
